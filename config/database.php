@@ -2,6 +2,17 @@
 
 use Illuminate\Support\Str;
 
+/*
+| PHP 8.5 deprecated the PDO::MYSQL_ATTR_* constants in favour of the
+| Pdo\Mysql class constants. The ternary short-circuits, so the deprecated
+| constant is never read on PHP 8.5 (and Pdo\Mysql never exists on older
+| versions). Reading it unconditionally prints a deprecation notice that
+| breaks responses on the Vercel runtime.
+*/
+$mysqlSslCaAttribute = PHP_VERSION_ID >= 80500
+    ? \Pdo\Mysql::ATTR_SSL_CA
+    : PDO::MYSQL_ATTR_SSL_CA;
+
 return [
 
     /*
@@ -58,7 +69,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                $mysqlSslCaAttribute => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
@@ -78,7 +89,7 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                $mysqlSslCaAttribute => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
 
