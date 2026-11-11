@@ -94,7 +94,12 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => 'require',
+            'sslmode' => env('DB_SSLMODE', 'require'),
+            'options' => [
+                // Required for Supabase's transaction-mode connection pooler,
+                // which does not support server-side prepared statements.
+                PDO::ATTR_EMULATE_PREPARES => env('DB_EMULATE_PREPARES', true),
+            ],
         ],
 
         'sqlsrv' => [
