@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Breedings\Tables;
 use App\Models\Breeding;
 use App\Models\Cage;
 use App\Models\Farrowing;
+use App\Rules\OwnedByCurrentUser;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -147,7 +148,8 @@ class BreedingsTable
                                 ->pluck('cage_number', 'id')
                                 ->all())
                             ->searchable()
-                            ->native(false),
+                            ->native(false)
+                            ->rules([new OwnedByCurrentUser(Cage::class)]),
                         Textarea::make('notes')
                             ->rows(2)
                             ->columnSpanFull(),

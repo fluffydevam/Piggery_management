@@ -17,6 +17,7 @@ class MedicalLogFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_id' => fn () => \Illuminate\Support\Facades\Auth::id() ?? \App\Models\User::factory(),
             'treatable_type' => Pig::class,
             'treatable_id' => Pig::factory(),
             'medication_id' => Medication::factory(),

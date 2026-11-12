@@ -16,6 +16,7 @@ class LitterFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_id' => fn () => \Illuminate\Support\Facades\Auth::id() ?? \App\Models\User::factory(),
             'farrowing_id' => Farrowing::factory(),
             'cage_id' => null,
             'litter_tag' => 'LIT-'.fake()->unique()->numerify('####'),

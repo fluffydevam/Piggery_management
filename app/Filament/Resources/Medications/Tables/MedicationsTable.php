@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Medications\Tables;
 
+use App\Models\Medication;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -66,13 +67,14 @@ class MedicationsTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(fn (Medication $record): bool => $record->user_id !== null),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()->authorizeIndividualRecords('delete'),
+                    ForceDeleteBulkAction::make()->authorizeIndividualRecords('forceDelete'),
+                    RestoreBulkAction::make()->authorizeIndividualRecords('restore'),
                 ]),
             ]);
     }

@@ -7,6 +7,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rules\Unique;
 
 class MedicationForm
 {
@@ -20,7 +21,14 @@ class MedicationForm
                         TextInput::make('name')
                             ->required()
                             ->maxLength(100)
-                            ->unique(ignoreRecord: true),
+                            ->unique(
+                                ignoreRecord: true,
+                                modifyRuleUsing: fn (Unique $rule) => $rule->where(
+                                    fn ($query) => $query
+                                        ->where('user_id', auth()->id())
+                                        ->orWhereNull('user_id'),
+                                ),
+                            ),
 
                         Select::make('type')
                             ->options([

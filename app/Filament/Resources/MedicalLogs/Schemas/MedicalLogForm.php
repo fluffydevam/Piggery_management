@@ -6,6 +6,8 @@ use App\Models\Litter;
 use App\Models\MedicalLog;
 use App\Models\Medication;
 use App\Models\Pig;
+use App\Rules\OwnedByCurrentUser;
+use App\Rules\TreatableBelongsToCurrentUser;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -57,7 +59,10 @@ class MedicalLogForm
                             })
                             ->searchable()
                             ->required()
-                            ->native(false),
+                            ->native(false)
+                            ->rules(fn (Get $get): array => [
+                                new TreatableBelongsToCurrentUser($get('treatable_type')),
+                            ]),
                     ]),
 
                 Section::make('Treatment')
@@ -81,7 +86,8 @@ class MedicalLogForm
                                 ->pluck('name', 'id')
                                 ->all())
                             ->searchable()
-                            ->native(false),
+                            ->native(false)
+                            ->rules([new OwnedByCurrentUser(Medication::class)]),
 
                         DatePicker::make('date_administered')
                             ->label('Date given')

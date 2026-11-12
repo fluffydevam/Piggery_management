@@ -4,12 +4,14 @@ namespace App\Filament\Resources\Pigs\Schemas;
 
 use App\Models\Cage;
 use App\Models\Pig;
+use App\Rules\OwnedByCurrentUser;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rules\Unique;
 
 class PigForm
 {
@@ -24,7 +26,10 @@ class PigForm
                             ->label('Tag number')
                             ->required()
                             ->maxLength(50)
-                            ->unique(ignoreRecord: true),
+                            ->unique(
+                                ignoreRecord: true,
+                                modifyRuleUsing: fn (Unique $rule) => $rule->where('user_id', auth()->id()),
+                            ),
 
                         Select::make('type')
                             ->options([
@@ -72,7 +77,8 @@ class PigForm
                             )
                             ->searchable()
                             ->preload()
-                            ->native(false),
+                            ->native(false)
+                            ->rules([new OwnedByCurrentUser(Cage::class)]),
                     ]),
 
                 Section::make('Status & origin')

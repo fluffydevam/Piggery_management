@@ -16,6 +16,7 @@ class FarrowingFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_id' => fn () => \Illuminate\Support\Facades\Auth::id() ?? \App\Models\User::factory(),
             'breeding_id' => Breeding::factory()->farrowed(),
             'farrowing_date' => fake()->dateTimeBetween('-40 days', 'now')->format('Y-m-d'),
             'born_alive' => fake()->numberBetween(6, 14),

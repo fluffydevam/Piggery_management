@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Cage extends Model
 {
+    use BelongsToUser;
     use HasFactory;
     use SoftDeletes;
 
@@ -42,6 +44,7 @@ class Cage extends Model
     ];
 
     protected $fillable = [
+        'user_id',
         'cage_number',
         'type',
         'capacity',

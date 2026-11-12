@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FeedTransaction extends Model
 {
+    use BelongsToUser;
     use HasFactory;
 
     public const TYPE_IN = 'in';
@@ -38,10 +40,6 @@ class FeedTransaction extends Model
 
     protected static function booted(): void
     {
-        static::creating(function (self $transaction): void {
-            $transaction->user_id ??= auth()->id();
-        });
-
         static::created(fn (self $transaction) => $transaction->feed->recalculateStock());
         static::deleted(fn (self $transaction) => $transaction->feed->recalculateStock());
     }
@@ -49,11 +47,6 @@ class FeedTransaction extends Model
     public function feed(): BelongsTo
     {
         return $this->belongsTo(Feed::class);
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     public function signedQuantity(): float

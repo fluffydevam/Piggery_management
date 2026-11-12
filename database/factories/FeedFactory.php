@@ -15,6 +15,7 @@ class FeedFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_id' => fn () => \Illuminate\Support\Facades\Auth::id() ?? \App\Models\User::factory(),
             'name' => ucfirst(fake()->unique()->words(2, true)).' Feed',
             'category' => fake()->randomElement(Feed::CATEGORIES),
             'bag_weight_kg' => 50,
