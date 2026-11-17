@@ -32,6 +32,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->registration()
+            ->profile()
             ->brandName('Piggery Management')
             ->colors([
                 'primary' => Color::Emerald,

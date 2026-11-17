@@ -22,7 +22,7 @@ class FeedTransactionFactory extends Factory
             'transaction_date' => fake()->dateTimeBetween('-60 days', 'now')->format('Y-m-d'),
             'reference' => null,
             'cost' => null,
-            'user_id' => null,
+            'user_id' => fn () => \Illuminate\Support\Facades\Auth::id() ?? \App\Models\User::factory(),
             'notes' => null,
         ];
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class Feed extends Model
 {
+    use BelongsToUser;
     use HasFactory;
     use SoftDeletes;
 
@@ -26,6 +28,7 @@ class Feed extends Model
     ];
 
     protected $fillable = [
+        'user_id',
         'name',
         'category',
         'bag_weight_kg',

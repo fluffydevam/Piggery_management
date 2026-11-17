@@ -4,6 +4,7 @@ namespace App\Filament\Resources\FeedTransactions\Schemas;
 
 use App\Models\Feed;
 use App\Models\FeedTransaction;
+use App\Rules\OwnedByCurrentUser;
 use App\Rules\StockAvailability;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -29,7 +30,8 @@ class FeedTransactionForm
                             ->preload()
                             ->required()
                             ->live()
-                            ->native(false),
+                            ->native(false)
+                            ->rules([new OwnedByCurrentUser(Feed::class)]),
 
                         Select::make('type')
                             ->options([

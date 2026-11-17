@@ -6,6 +6,7 @@ namespace App\Models;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -49,11 +50,41 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * This is a single-user family-farm system: every account that exists
-     * may access the admin panel. Access is still gated by authentication.
+     * Every account that registers owns one isolated piggery. Access is still
+     * gated by authentication; there are no roles in v1.
      */
     public function canAccessPanel(Panel $panel): bool
     {
         return true;
+    }
+
+    public function cages(): HasMany
+    {
+        return $this->hasMany(Cage::class);
+    }
+
+    public function pigs(): HasMany
+    {
+        return $this->hasMany(Pig::class);
+    }
+
+    public function breedings(): HasMany
+    {
+        return $this->hasMany(Breeding::class);
+    }
+
+    public function litters(): HasMany
+    {
+        return $this->hasMany(Litter::class);
+    }
+
+    public function feeds(): HasMany
+    {
+        return $this->hasMany(Feed::class);
+    }
+
+    public function medicalLogs(): HasMany
+    {
+        return $this->hasMany(MedicalLog::class);
     }
 }

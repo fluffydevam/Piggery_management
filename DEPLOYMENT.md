@@ -82,6 +82,12 @@ php artisan migrate --force
 php artisan db:seed --class=AdminUserSeeder --force
 ```
 
+> **Applying the multi-account migration.** `add_user_id_to_farm_tables` gives
+> every farm table an owner and moves the existing rows to the oldest account.
+> Run `php artisan migrate --force` against Supabase **before** deploying the
+> corresponding code: adding the columns is backward compatible, so the old
+> deployment keeps working while the schema is upgraded.
+
 Verify the schema landed:
 
 ```powershell
@@ -144,6 +150,7 @@ Set these in **Vercel → Project → Settings → Environment Variables** for b
 | `CACHE_STORE` | `database` |
 | `QUEUE_CONNECTION` | `sync` |
 | `FILESYSTEM_DISK` | `local` |
+| `REGISTRATION_STARTER_DATA` | `true` (give new accounts a starter set of cages) or `false` |
 
 `APP_KEY` must be generated once and reused for every environment:
 
@@ -193,7 +200,8 @@ To give the app a permanent address, add a custom domain in
 
 ## 6. Post-deploy verification
 
-1. `https://<your-project>.vercel.app/` redirects to `/admin`.
+1. `https://<your-project>.vercel.app/` shows the public landing page with
+   **Sign in** and **Create account** buttons.
 2. The login page renders with full styling (confirms the Filament asset routes).
 3. Log in with the seeded admin account.
 4. The dashboard shows the six stat cards and the farrowing / feed / medical
@@ -201,6 +209,8 @@ To give the app a permanent address, add a custom domain in
 5. Create a cage, a pig, a breeding, and a feed transaction.
 6. Record a farrowing from **Breedings → Record farrowing** and confirm a litter
    appears under **Litters**.
+7. Register a second account at `/admin/register`. It must get its own cages and
+   must not see any data from the first account.
 
 ---
 
@@ -235,6 +245,11 @@ To give the app a permanent address, add a custom domain in
 
 ## 9. Security checklist
 
+- Registration is public and email verification is **intentionally disabled**
+  because no mail provider is configured. Filament rate-limits sign-ups to two
+  attempts per minute per IP. Enable `->emailVerification()` and
+  `->passwordReset()` in the panel once SMTP/Resend is set up.
+- Users change their own password from **Profile** (avatar menu → Profile).
 - Change the seeded admin password immediately after the first login.
 - Rotate the Supabase database password if it has ever been committed or shared.
 - Keep `APP_DEBUG=false` in production.

@@ -6,6 +6,7 @@ use App\Models\Breeding;
 use App\Models\Pig;
 use App\Rules\BoarGender;
 use App\Rules\OneActiveBreedingPerSow;
+use App\Rules\OwnedByCurrentUser;
 use App\Rules\SowGender;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -42,6 +43,7 @@ class BreedingForm
                             ->rules(fn (?Breeding $record): array => [
                                 new SowGender(),
                                 new OneActiveBreedingPerSow($record?->id),
+                                new OwnedByCurrentUser(Pig::class),
                             ]),
 
                         Select::make('boar_id')
@@ -58,7 +60,7 @@ class BreedingForm
                             ->searchable()
                             ->preload()
                             ->native(false)
-                            ->rules([new BoarGender()])
+                            ->rules([new BoarGender(), new OwnedByCurrentUser(Pig::class)])
                             ->helperText('Leave empty for artificial insemination.'),
 
                         DatePicker::make('breeding_date')

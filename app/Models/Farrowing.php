@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUser;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Farrowing extends Model
 {
+    use BelongsToUser;
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'breeding_id',
         'farrowing_date',
         'born_alive',

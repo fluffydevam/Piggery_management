@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class MedicalLog extends Model
 {
+    use BelongsToUser;
     use HasFactory;
 
     public const TYPE_VACCINE = 'vaccine';
@@ -31,6 +33,7 @@ class MedicalLog extends Model
     public const ROUTES = ['im', 'iv', 'sc', 'oral', 'topical'];
 
     protected $fillable = [
+        'user_id',
         'treatable_type',
         'treatable_id',
         'medication_id',
@@ -131,6 +134,7 @@ class MedicalLog extends Model
             $this->update(['completed_at' => now()]);
 
             return static::create(array_merge([
+                'user_id' => $this->user_id,
                 'treatable_type' => $this->treatable_type,
                 'treatable_id' => $this->treatable_id,
                 'medication_id' => $this->medication_id,

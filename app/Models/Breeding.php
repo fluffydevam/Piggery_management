@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class Breeding extends Model
 {
+    use BelongsToUser;
     use HasFactory;
     use SoftDeletes;
 
@@ -35,6 +37,7 @@ class Breeding extends Model
     ];
 
     protected $fillable = [
+        'user_id',
         'sow_id',
         'boar_id',
         'breeding_date',
@@ -99,6 +102,7 @@ class Breeding extends Model
     {
         return DB::transaction(function () use ($attributes) {
             $farrowing = $this->farrowing()->create([
+                'user_id' => $this->user_id,
                 'farrowing_date' => $attributes['farrowing_date'] ?? $this->expected_farrowing_date->toDateString(),
                 'born_alive' => (int) ($attributes['born_alive'] ?? 0),
                 'stillborn' => (int) ($attributes['stillborn'] ?? 0),
@@ -107,6 +111,7 @@ class Breeding extends Model
             ]);
 
             $farrowing->litter()->create([
+                'user_id' => $this->user_id,
                 'cage_id' => $attributes['cage_id'] ?? null,
                 'litter_tag' => $attributes['litter_tag']
                     ?? $this->sow->tag_number.'-'.$farrowing->farrowing_date->format('Ymd'),

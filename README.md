@@ -1,6 +1,21 @@
 # Piggery Management System
 
-A family-farm management system built with **Laravel 12** and **Filament 4**.
+A multi-account piggery manager built with **Laravel 12** and **Filament 4**.
+Anyone can register, and every account manages its own herd in complete
+isolation from other farms.
+
+## Accounts & privacy
+
+- Public sign-up at `/admin/register`; the landing page at `/` links to it.
+- Every cage, pig, breeding, farrowing, litter, feed, feed transaction, medical
+  log and custom medication carries a `user_id` owner.
+- All queries are scoped to the signed-in account, so one farm can never see or
+  edit another farm's records. Identifiers such as `PIG-001` or cage `G1` only
+  need to be unique inside a single account.
+- The built-in medication catalog is shared and read-only; each account can add
+  its own medications on top of it.
+- New accounts start with an empty set of cages (configurable via
+  `REGISTRATION_STARTER_DATA`) and no invented animals or stock.
 
 ## Modules
 
@@ -40,10 +55,13 @@ php artisan migrate:fresh --seed
 php artisan serve
 ```
 
-Open <http://localhost:8000> and sign in at `/admin`:
+Open <http://localhost:8000> for the landing page, then sign in at `/admin`:
 
 - **Email:** `farmer@example.com`
 - **Password:** `password`
+
+Or register a second account at `/admin/register` and confirm that it starts
+empty — that is the multi-account isolation working.
 
 Change the password after first login. Override the seeded account with
 `ADMIN_NAME`, `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
@@ -54,8 +72,8 @@ Change the password after first login. Override the seeded account with
 php artisan test
 ```
 
-52 tests cover models, scopes, validation rules, Filament resources, dashboard
-widgets and panel workflows.
+61 tests cover models, scopes, validation rules, Filament resources, dashboard
+widgets, panel workflows and cross-account isolation.
 
 ## Deployment
 
