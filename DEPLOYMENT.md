@@ -101,6 +101,17 @@ Import the Git repository at <https://vercel.com/new>. The repo already contains
   `pdo_pgsql` and `pgsql`), static routes for Filament assets, and serverless-safe
   runtime defaults (`/tmp` caches, `stderr` logging, database sessions/cache,
   synchronous queue).
+- The deployment filesystem is **read-only**. Laravel writes its package and
+  service manifests during boot, so `vercel.json` redirects every cache file to
+  `/tmp`:
+  `APP_PACKAGES_CACHE=/tmp/packages.php`, `APP_SERVICES_CACHE=/tmp/services.php`,
+  `APP_CONFIG_CACHE`, `APP_EVENTS_CACHE`, `APP_ROUTES_CACHE`, and
+  `VIEW_COMPILED_PATH=/tmp/views`. Without `APP_PACKAGES_CACHE` the first request
+  fails with
+  `The /var/task/user/bootstrap/cache directory must be present and writable.`
+- `bootstrap/app.php` trusts the Vercel proxy (`trustProxies(at: '*')`). Vercel
+  terminates TLS and forwards `X-Forwarded-Proto: https`; without this Laravel
+  emits `http://` asset and form URLs, which browsers block as mixed content.
 - `api/index.php` — forwards every request to Laravel's front controller.
 - `.vercelignore` — excludes `vendor`, `node_modules`, `.env` and `.git`.
 
@@ -119,7 +130,7 @@ Set these in **Vercel → Project → Settings → Environment Variables** for b
 | `APP_ENV` | `production` |
 | `APP_KEY` | output of `php artisan key:generate --show` |
 | `APP_DEBUG` | `false` |
-| `APP_URL` | `https://<your-project>.vercel.app` |
+| `APP_URL` | `https://<production-domain>` (must be HTTPS, no trailing slash) |
 | `LOG_CHANNEL` | `stderr` |
 | `DB_CONNECTION` | `pgsql` |
 | `DB_HOST` | `aws-0-<region>.pooler.supabase.com` |
@@ -159,6 +170,25 @@ Vercel builds and deploys automatically. Or deploy from the CLI:
 npx vercel --prod
 ```
 
+### Which URL is actually live?
+
+Vercel gives every project three kinds of hostnames:
+
+| Kind | Example | Behaviour |
+| --- | --- | --- |
+| Production domain | `piggery-management-nu.vercel.app` | Always serves the newest production deployment. **Use this one.** |
+| Deployment URL | `piggery-management-<deployment-id>-<team>.vercel.app` | Frozen at one build forever. Also behind Deployment Protection (SSO). |
+| Git branch URL | `piggery-management-git-main-<team>.vercel.app` | Preview of the `main` branch. |
+
+A **deployment URL never updates**. If you bookmark one, you will keep seeing
+the code from that build — including bugs that were fixed later. When a fix
+"doesn't work" on a URL like `…-3qr51cy27-my-project-a76a.vercel.app`, check the
+**Domains** tab of the project for the production domain instead of the
+deployment-specific URL.
+
+To give the app a permanent address, add a custom domain in
+**Vercel → Project → Settings → Domains** and set it as primary.
+
 ---
 
 ## 6. Post-deploy verification
@@ -189,6 +219,10 @@ npx vercel --prod
 | Symptom | Fix |
 | --- | --- |
 | `500` on every page | `APP_KEY` missing or wrong in Vercel env vars. |
+| `The /var/task/user/bootstrap/cache directory must be present and writable` | Read-only filesystem; make sure `vercel.json` sets `APP_PACKAGES_CACHE=/tmp/packages.php` and `APP_SERVICES_CACHE=/tmp/services.php`. |
+| Unstyled panel, or login does nothing | Generated URLs are `http://`; confirm `bootstrap/app.php` calls `trustProxies(at: '*')` so `X-Forwarded-Proto: https` is honoured. |
+| An old error still appears after a fix | You are on a **deployment URL**, not the production domain. See "Which URL is actually live?". |
+| `Deprecated: Constant PDO::MYSQL_ATTR_SSL_CA` | Running PHP 8.5 with an old build; the fix resolves the constant via `Pdo\Mysql::ATTR_SSL_CA`. Redeploy the latest commit. |
 | `could not find driver` | Runtime not `vercel-php@0.9.0`; check `vercel.json`. |
 | `connection timed out` to Supabase | Using the direct `db.<ref>.supabase.co` host; switch to the pooler host. |
 | `prepared statement ... already exists` | Using port `6543` without `DB_EMULATE_PREPARES=true`. |
