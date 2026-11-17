@@ -15,6 +15,7 @@ class CageFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_id' => fn () => \Illuminate\Support\Facades\Auth::id() ?? \App\Models\User::factory(),
             'cage_number' => 'C-'.fake()->unique()->numerify('###'),
             'type' => fake()->randomElement(Cage::TYPES),
             'capacity' => fake()->numberBetween(1, 10),

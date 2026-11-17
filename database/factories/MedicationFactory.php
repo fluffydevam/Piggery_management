@@ -15,6 +15,7 @@ class MedicationFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_id' => fn () => \Illuminate\Support\Facades\Auth::id() ?? \App\Models\User::factory(),
             'name' => ucfirst(fake()->unique()->words(2, true)),
             'type' => fake()->randomElement(Medication::TYPES),
             'default_dosage' => fake()->randomElement(['1 mL', '2 mL', '5 mL', '10 mL']),

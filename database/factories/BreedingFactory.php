@@ -16,6 +16,7 @@ class BreedingFactory extends Factory
     public function definition(): array
     {
         return [
+            'user_id' => fn () => \Illuminate\Support\Facades\Auth::id() ?? \App\Models\User::factory(),
             'sow_id' => Pig::factory()->sow(),
             'boar_id' => Pig::factory()->boar(),
             'breeding_date' => fake()->dateTimeBetween('-110 days', 'now')->format('Y-m-d'),

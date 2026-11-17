@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 class Litter extends Model
 {
+    use BelongsToUser;
     use HasFactory;
     use SoftDeletes;
 
@@ -33,6 +35,7 @@ class Litter extends Model
     ];
 
     protected $fillable = [
+        'user_id',
         'farrowing_id',
         'cage_id',
         'litter_tag',
@@ -123,6 +126,7 @@ class Litter extends Model
     public function promoteToGilt(string $tagNumber, array $attributes = []): Pig
     {
         return Pig::create(array_merge([
+            'user_id' => $this->user_id,
             'tag_number' => $tagNumber,
             'type' => Pig::TYPE_GILT,
             'sex' => 'female',
