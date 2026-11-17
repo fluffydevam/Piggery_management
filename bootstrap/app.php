@@ -11,7 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Vercel terminates TLS at its edge and forwards the original scheme
+        // via X-Forwarded-Proto. Without trusting the proxy, Laravel believes
+        // every request is plain HTTP and emits http:// URLs, which browsers
+        // block as mixed content on the HTTPS deployment.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
