@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources\FeedTransactions\Tables;
 
+use App\Models\Feed;
 use App\Models\FeedTransaction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -84,10 +86,19 @@ class FeedTransactionsTable
             ])
             ->recordActions([
                 EditAction::make(),
+                DeleteAction::make()
+                    ->after(function (FeedTransaction $record): void {
+                        Feed::find($record->feed_id)?->recalculateStock();
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->after(function ($records): void {
+                            foreach ($records->pluck('feed_id')->unique() as $feedId) {
+                                Feed::find($feedId)?->recalculateStock();
+                            }
+                        }),
                 ]),
             ]);
     }

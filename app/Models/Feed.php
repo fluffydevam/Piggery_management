@@ -95,20 +95,26 @@ class Feed extends Model
     }
 
     /**
-     * Recompute stock_kg from the transaction ledger.
-     * Stock in adds, stock out subtracts, adjustments are signed deltas.
+     * Recompute stock_kg from the transaction ledger in one atomic statement.
+     *
+     * This deliberately avoids a nested DB::transaction()/lockForUpdate():
+     * Filament already wraps saves in a transaction, and that combination
+     * could leave the feed cache stale on production. Stock in adds, stock
+     * out subtracts, and adjustments are signed deltas.
      */
     public function recalculateStock(): void
     {
-        DB::transaction(function () {
-            $feed = static::query()->lockForUpdate()->findOrFail($this->getKey());
+        $id = (int) $this->getKey();
 
-            $stock = $feed->transactions()->toBase()
-                ->selectRaw("COALESCE(SUM(CASE WHEN type = 'out' THEN -quantity_kg ELSE quantity_kg END), 0) as stock")
-                ->value('stock');
+        DB::table('feeds')
+            ->where('id', $id)
+            ->update([
+                'stock_kg' => DB::raw(
+                    "COALESCE((SELECT SUM(CASE WHEN type = 'out' THEN -quantity_kg ELSE quantity_kg END) "
+                    ."FROM feed_transactions WHERE feed_id = {$id}), 0)"
+                ),
+            ]);
 
-            $feed->update(['stock_kg' => $stock]);
-            $this->stock_kg = $feed->stock_kg;
-        });
+        $this->stock_kg = DB::table('feeds')->where('id', $id)->value('stock_kg');
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Feeds\Tables;
 
 use App\Models\Feed;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -68,6 +69,13 @@ class FeedsTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
+                Action::make('recalculate_stock')
+                    ->label('Recalculate stock')
+                    ->icon('heroicon-o-arrow-path')
+                    ->action(function (Feed $record): void {
+                        $record->recalculateStock();
+                    })
+                    ->successNotificationTitle('Feed stock recalculated from transactions.'),
                 EditAction::make(),
             ])
             ->toolbarActions([

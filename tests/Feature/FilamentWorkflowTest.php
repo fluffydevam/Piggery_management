@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use App\Filament\Resources\Breedings\Pages\CreateBreeding;
 use App\Filament\Resources\Breedings\Pages\ListBreedings;
 use App\Filament\Resources\FeedTransactions\Pages\CreateFeedTransaction;
+use App\Filament\Resources\FeedTransactions\Pages\EditFeedTransaction;
+use App\Filament\Resources\FeedTransactions\Pages\ListFeedTransactions;
+use App\Filament\Resources\Feeds\Pages\ListFeeds;
 use App\Filament\Resources\Litters\Pages\ListLitters;
 use App\Filament\Resources\MedicalLogs\Pages\CreateMedicalLog;
 use App\Models\Breeding;
@@ -113,6 +116,70 @@ class FilamentWorkflowTest extends TestCase
         $this->assertSame('250.00', $feed->fresh()->stock_kg);
         $this->assertSame(5.0, $feed->fresh()->stock_in_bags);
         $this->assertSame(auth()->id(), FeedTransaction::query()->firstOrFail()->user_id);
+    }
+
+    public function test_editing_a_transaction_from_the_panel_recalculates_feed_stock(): void
+    {
+        $feed = Feed::factory()->create(['stock_kg' => 0, 'bag_weight_kg' => 50]);
+        $transaction = FeedTransaction::create([
+            'feed_id' => $feed->id,
+            'type' => FeedTransaction::TYPE_IN,
+            'quantity_bags' => 1,
+            'transaction_date' => today()->toDateString(),
+        ]);
+
+        $this->assertSame('50.00', $feed->fresh()->stock_kg);
+
+        Livewire::test(EditFeedTransaction::class, ['record' => $transaction->getRouteKey()])
+            ->fillForm(['quantity_bags' => 4])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('200.00', $feed->fresh()->stock_kg);
+        $this->assertSame(4.0, $feed->fresh()->stock_in_bags);
+    }
+
+    public function test_deleting_a_transaction_from_the_panel_recalculates_feed_stock(): void
+    {
+        $feed = Feed::factory()->create(['stock_kg' => 0, 'bag_weight_kg' => 50]);
+        $transaction = FeedTransaction::create([
+            'feed_id' => $feed->id,
+            'type' => FeedTransaction::TYPE_IN,
+            'quantity_bags' => 2,
+            'transaction_date' => today()->toDateString(),
+        ]);
+
+        $this->assertSame('100.00', $feed->fresh()->stock_kg);
+
+        Livewire::test(ListFeedTransactions::class)
+            ->callTableAction('delete', $transaction)
+            ->assertHasNoTableActionErrors();
+
+        $this->assertSame('0.00', $feed->fresh()->stock_kg);
+        $this->assertSame(0.0, $feed->fresh()->stock_in_bags);
+    }
+
+    public function test_recalculate_stock_action_repairs_a_stale_feed_cache(): void
+    {
+        $feed = Feed::factory()->create(['stock_kg' => 0, 'bag_weight_kg' => 50]);
+
+        FeedTransaction::create([
+            'feed_id' => $feed->id,
+            'type' => FeedTransaction::TYPE_IN,
+            'quantity_bags' => 5,
+            'transaction_date' => today()->toDateString(),
+        ]);
+
+        // Simulate the stale cache seen in production.
+        Feed::query()->whereKey($feed->id)->update(['stock_kg' => 0]);
+        $this->assertSame('0.00', $feed->fresh()->stock_kg);
+
+        Livewire::test(ListFeeds::class)
+            ->callTableAction('recalculate_stock', $feed)
+            ->assertHasNoTableActionErrors();
+
+        $this->assertSame('250.00', $feed->fresh()->stock_kg);
+        $this->assertSame(5.0, $feed->fresh()->stock_in_bags);
     }
 
     public function test_the_panel_blocks_a_stock_out_larger_than_the_available_stock(): void
