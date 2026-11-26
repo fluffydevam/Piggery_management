@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Litters\Tables;
 
-use App\Models\Cage;
+use App\Filament\Resources\Litters\LitterResource;
 use App\Models\Litter;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -10,8 +10,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
@@ -143,40 +141,12 @@ class LittersTable
                             ->send();
                     }),
 
-                Action::make('promoteToGilt')
-                    ->label('Keep as gilt')
-                    ->icon('heroicon-o-sparkles')
+                Action::make('keepAsPiglets')
+                    ->label('Keep as piglets')
+                    ->icon('heroicon-o-heart')
                     ->color('success')
-                    ->schema([
-                        TextInput::make('tag_number')
-                            ->label('New gilt tag')
-                            ->required()
-                            ->maxLength(50)
-                            ->unique(table: 'pigs', column: 'tag_number'),
-                        Select::make('cage_id')
-                            ->label('Cage')
-                            ->options(fn (): array => Cage::query()
-                                ->orderBy('cage_number')
-                                ->pluck('cage_number', 'id')
-                                ->all())
-                            ->searchable()
-                            ->native(false),
-                        Textarea::make('notes')
-                            ->rows(2)
-                            ->columnSpanFull(),
-                    ])
-                    ->action(function (Litter $record, array $data): void {
-                        $gilt = $record->promoteToGilt($data['tag_number'], [
-                            'cage_id' => $data['cage_id'] ?? null,
-                            'notes' => $data['notes'] ?? null,
-                        ]);
-
-                        Notification::make()
-                            ->title('Gilt added to the herd')
-                            ->body("{$gilt->tag_number} is now an active gilt.")
-                            ->success()
-                            ->send();
-                    }),
+                    ->url(fn (Litter $record): string => LitterResource::getUrl('register-piglets', ['record' => $record]))
+                    ->visible(fn (Litter $record): bool => $record->current_count > 0),
 
                 EditAction::make(),
             ])

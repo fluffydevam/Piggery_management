@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Litters;
 
 use App\Filament\Resources\Litters\Pages\EditLitter;
 use App\Filament\Resources\Litters\Pages\ListLitters;
+use App\Filament\Resources\Litters\Pages\RegisterPiglets;
 use App\Filament\Resources\Litters\Schemas\LitterForm;
 use App\Filament\Resources\Litters\Tables\LittersTable;
 use App\Models\Litter;
@@ -58,6 +59,7 @@ class LitterResource extends Resource
         return [
             'index' => ListLitters::route('/'),
             'edit' => EditLitter::route('/{record}/edit'),
+            'register-piglets' => RegisterPiglets::route('/{record}/piglets'),
         ];
     }
 

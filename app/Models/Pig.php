@@ -51,6 +51,7 @@ class Pig extends Model
         'sex',
         'birth_date',
         'cage_id',
+        'litter_id',
         'status',
         'origin',
         'photo_path',
@@ -87,6 +88,12 @@ class Pig extends Model
     public function cage(): BelongsTo
     {
         return $this->belongsTo(Cage::class);
+    }
+
+    /** The litter this piglet was registered from, when kept as an individual. */
+    public function litter(): BelongsTo
+    {
+        return $this->belongsTo(Litter::class);
     }
 
     /** Breedings where this pig is the sow. */

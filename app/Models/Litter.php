@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
@@ -67,6 +68,14 @@ class Litter extends Model
         return $this->belongsTo(Cage::class);
     }
 
+    /**
+     * Alive piglets that have been registered as individual herd records.
+     */
+    public function piglets(): HasMany
+    {
+        return $this->hasMany(Pig::class);
+    }
+
     public function medicalLogs(): MorphMany
     {
         return $this->morphMany(MedicalLog::class, 'treatable');
@@ -118,6 +127,25 @@ class Litter extends Model
             'weaned_date' => $date ?? today()->toDateString(),
             'weaned_count' => $count ?? $this->current_count,
         ]);
+    }
+
+    /**
+     * Register one alive piglet from this litter as an individual pig record.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function registerPiglet(array $attributes): Pig
+    {
+        return Pig::create(array_merge([
+            'user_id' => $this->user_id,
+            'type' => Pig::TYPE_PIGLET,
+            'sex' => 'female',
+            'birth_date' => $this->farrowing?->farrowing_date?->toDateString(),
+            'breed' => $this->sow?->breed,
+            'origin' => 'bred_on_farm',
+            'status' => Pig::STATUS_ACTIVE,
+            'litter_id' => $this->getKey(),
+        ], $attributes));
     }
 
     /**
