@@ -104,7 +104,7 @@ class FilamentWorkflowTest extends TestCase
             ->fillForm([
                 'feed_id' => $feed->id,
                 'type' => FeedTransaction::TYPE_IN,
-                'quantity_kg' => 250,
+                'quantity_bags' => 5,
                 'transaction_date' => today()->toDateString(),
             ])
             ->call('create')
@@ -123,11 +123,11 @@ class FilamentWorkflowTest extends TestCase
             ->fillForm([
                 'feed_id' => $feed->id,
                 'type' => FeedTransaction::TYPE_OUT,
-                'quantity_kg' => 100,
+                'quantity_bags' => 2,
                 'transaction_date' => today()->toDateString(),
             ])
             ->call('create')
-            ->assertHasFormErrors(['quantity_kg']);
+            ->assertHasFormErrors(['quantity_bags']);
 
         $this->assertSame(0, FeedTransaction::query()->count());
     }

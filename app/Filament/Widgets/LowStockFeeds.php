@@ -30,13 +30,13 @@ class LowStockFeeds extends TableWidget
 
                 TextColumn::make('stock_kg')
                     ->label('Stock')
-                    ->getStateUsing(fn (Feed $record): string => number_format((float) $record->stock_kg, 1).' kg')
+                    ->getStateUsing(fn (Feed $record): string => $record->stockLabel())
                     ->badge()
                     ->color('danger'),
 
-                TextColumn::make('reorder_level_kg')
+                TextColumn::make('reorder_level_bags')
                     ->label('Reorder at')
-                    ->getStateUsing(fn (Feed $record): string => number_format((float) $record->reorder_level_kg, 1).' kg'),
+                    ->getStateUsing(fn (Feed $record): string => $record->reorderLevelLabel()),
             ]);
     }
 }

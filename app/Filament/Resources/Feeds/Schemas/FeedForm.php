@@ -7,6 +7,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Validation\Rules\Unique;
 
@@ -46,15 +47,21 @@ class FeedForm
                             ->minValue(0.01)
                             ->default(50)
                             ->required()
-                            ->helperText('Used to show stock in bags.'),
+                            ->live()
+                            ->helperText('One bag of this feed weighs this many kg.'),
 
-                        TextInput::make('reorder_level_kg')
-                            ->label('Reorder level (kg)')
+                        TextInput::make('reorder_level_bags')
+                            ->label('Reorder level (bags)')
                             ->numeric()
                             ->minValue(0)
-                            ->default(100)
+                            ->default(1)
                             ->required()
-                            ->helperText('You are alerted when stock drops to this level.'),
+                            ->live()
+                            ->helperText(fn (Get $get): string => sprintf(
+                                'Alert threshold: %.2f bag(s) = %.2f kg.',
+                                (float) ($get('reorder_level_bags') ?? 0),
+                                round((float) ($get('reorder_level_bags') ?? 0) * (float) ($get('bag_weight_kg') ?? 0), 2),
+                            )),
 
                         TextInput::make('unit_cost')
                             ->label('Cost per bag')
@@ -68,15 +75,15 @@ class FeedForm
                     ]),
 
                 Section::make('Current stock')
-                    ->description('Stock is calculated automatically from feed transactions and cannot be edited directly.')
+                    ->description('Stock is calculated automatically from feed transactions recorded in bags.')
                     ->schema([
                         TextInput::make('stock_kg')
-                            ->label('Stock (kg)')
+                            ->label('Stock')
                             ->disabled()
                             ->dehydrated(false)
-                            ->formatStateUsing(fn (?Feed $record): ?string => $record
-                                ? number_format((float) $record->stock_kg, 2).' kg ('.number_format($record->stock_in_bags, 2).' bags)'
-                                : '0.00 kg'),
+                            ->formatStateUsing(fn (?Feed $record): string => $record
+                                ? $record->stockLabel()
+                                : '0.00 bags (0.00 kg)'),
                     ]),
             ]);
     }

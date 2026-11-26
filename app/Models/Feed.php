@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class Feed extends Model
 {
@@ -33,7 +34,7 @@ class Feed extends Model
         'category',
         'bag_weight_kg',
         'stock_kg',
-        'reorder_level_kg',
+        'reorder_level_bags',
         'unit_cost',
         'notes',
     ];
@@ -43,7 +44,7 @@ class Feed extends Model
         return [
             'bag_weight_kg' => 'decimal:2',
             'stock_kg' => 'decimal:2',
-            'reorder_level_kg' => 'decimal:2',
+            'reorder_level_bags' => 'decimal:2',
             'unit_cost' => 'decimal:2',
         ];
     }
@@ -62,14 +63,35 @@ class Feed extends Model
         );
     }
 
+    /** The kg threshold behind the farmer-facing reorder level in bags. */
+    public function reorderThresholdKg(): float
+    {
+        return round((float) $this->reorder_level_bags * (float) $this->bag_weight_kg, 2);
+    }
+
+    public function stockLabel(): string
+    {
+        return $this->bagLabel((float) $this->stock_in_bags, (float) $this->stock_kg);
+    }
+
+    public function reorderLevelLabel(): string
+    {
+        return $this->bagLabel((float) $this->reorder_level_bags, $this->reorderThresholdKg());
+    }
+
     public function isLowStock(): bool
     {
-        return (float) $this->stock_kg <= (float) $this->reorder_level_kg;
+        return (float) $this->stock_kg <= $this->reorderThresholdKg();
     }
 
     public function scopeLowStock(Builder $query): Builder
     {
-        return $query->whereColumn('stock_kg', '<=', 'reorder_level_kg');
+        return $query->whereRaw('stock_kg <= (reorder_level_bags * bag_weight_kg)');
+    }
+
+    protected function bagLabel(float $bags, float $kg): string
+    {
+        return number_format($bags, 2).' '.Str::plural('bag', $bags).' ('.number_format($kg, 2).' kg)';
     }
 
     /**

@@ -33,19 +33,14 @@ class FeedsTable
 
                 TextColumn::make('stock_kg')
                     ->label('Stock')
-                    ->getStateUsing(fn (Feed $record): string => number_format((float) $record->stock_kg, 2).' kg')
+                    ->getStateUsing(fn (Feed $record): string => $record->stockLabel())
                     ->badge()
                     ->color(fn (Feed $record): string => $record->isLowStock() ? 'danger' : 'success')
                     ->sortable(),
 
-                TextColumn::make('stock_in_bags')
-                    ->label('Bags')
-                    ->getStateUsing(fn (Feed $record): string => number_format($record->stock_in_bags, 2))
-                    ->toggleable(),
-
-                TextColumn::make('reorder_level_kg')
+                TextColumn::make('reorder_level_bags')
                     ->label('Reorder at')
-                    ->getStateUsing(fn (Feed $record): string => number_format((float) $record->reorder_level_kg, 2).' kg')
+                    ->getStateUsing(fn (Feed $record): string => $record->reorderLevelLabel())
                     ->toggleable(),
 
                 TextColumn::make('unit_cost')

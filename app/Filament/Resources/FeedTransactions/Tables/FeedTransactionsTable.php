@@ -9,6 +9,7 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class FeedTransactionsTable
 {
@@ -41,9 +42,14 @@ class FeedTransactionsTable
                     })
                     ->sortable(),
 
-                TextColumn::make('quantity_kg')
+                TextColumn::make('quantity_bags')
                     ->label('Quantity')
-                    ->getStateUsing(fn (FeedTransaction $record): string => number_format($record->signedQuantity(), 2).' kg')
+                    ->getStateUsing(function (FeedTransaction $record): string {
+                        $bags = $record->signedQuantityInBags();
+
+                        return number_format($bags, 2).' '.Str::plural('bag', abs($bags))
+                            .' ('.number_format($record->signedQuantity(), 2).' kg)';
+                    })
                     ->badge()
                     ->color(fn (FeedTransaction $record): string => $record->signedQuantity() < 0 ? 'danger' : 'success')
                     ->sortable(),

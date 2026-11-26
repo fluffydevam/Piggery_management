@@ -11,11 +11,11 @@ class FeedSeeder extends Seeder
     public function run(): void
     {
         $feeds = [
-            ['name' => 'Gestating Sow Feed', 'category' => 'gestating', 'bag_weight_kg' => 50, 'reorder_level_kg' => 150, 'unit_cost' => 1450],
-            ['name' => 'Lactating Sow Feed', 'category' => 'lactating', 'bag_weight_kg' => 50, 'reorder_level_kg' => 200, 'unit_cost' => 1600],
-            ['name' => 'Boar Feed', 'category' => 'boar', 'bag_weight_kg' => 50, 'reorder_level_kg' => 100, 'unit_cost' => 1350],
-            ['name' => 'Starter Feed', 'category' => 'starter', 'bag_weight_kg' => 25, 'reorder_level_kg' => 75, 'unit_cost' => 1800],
-            ['name' => 'Grower Feed', 'category' => 'grower', 'bag_weight_kg' => 50, 'reorder_level_kg' => 150, 'unit_cost' => 1500],
+            ['name' => 'Gestating Sow Feed', 'category' => 'gestating', 'bag_weight_kg' => 50, 'reorder_level_bags' => 3, 'unit_cost' => 1450],
+            ['name' => 'Lactating Sow Feed', 'category' => 'lactating', 'bag_weight_kg' => 50, 'reorder_level_bags' => 4, 'unit_cost' => 1600],
+            ['name' => 'Boar Feed', 'category' => 'boar', 'bag_weight_kg' => 50, 'reorder_level_bags' => 2, 'unit_cost' => 1350],
+            ['name' => 'Starter Feed', 'category' => 'starter', 'bag_weight_kg' => 25, 'reorder_level_bags' => 3, 'unit_cost' => 1800],
+            ['name' => 'Grower Feed', 'category' => 'grower', 'bag_weight_kg' => 50, 'reorder_level_bags' => 3, 'unit_cost' => 1500],
         ];
 
         foreach ($feeds as $feed) {
@@ -47,10 +47,16 @@ class FeedSeeder extends Seeder
         $feedIds = Feed::query()->pluck('id', 'name');
 
         foreach ($transactions as $transaction) {
+            $feed = Feed::findOrFail($feedIds[$transaction['feed']]);
+            $bagWeight = (float) $feed->bag_weight_kg;
+
             FeedTransaction::create([
-                'feed_id' => $feedIds[$transaction['feed']],
+                'feed_id' => $feed->id,
                 'type' => $transaction['type'],
                 'quantity_kg' => $transaction['quantity_kg'],
+                'quantity_bags' => $bagWeight > 0
+                    ? round($transaction['quantity_kg'] / $bagWeight, 2)
+                    : null,
                 'transaction_date' => today()->subDays($transaction['days_ago'])->toDateString(),
                 'reference' => $transaction['reference'],
             ]);

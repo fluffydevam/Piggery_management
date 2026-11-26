@@ -22,6 +22,7 @@ class FeedTransaction extends Model
         'feed_id',
         'type',
         'quantity_kg',
+        'quantity_bags',
         'transaction_date',
         'reference',
         'cost',
@@ -34,14 +35,42 @@ class FeedTransaction extends Model
         return [
             'transaction_date' => 'date',
             'quantity_kg' => 'decimal:2',
+            'quantity_bags' => 'decimal:2',
             'cost' => 'decimal:2',
         ];
     }
 
     protected static function booted(): void
     {
-        static::created(fn (self $transaction) => $transaction->feed->recalculateStock());
-        static::deleted(fn (self $transaction) => $transaction->feed->recalculateStock());
+        // Bags are what the farmer records; kg is the stored ledger unit.
+        static::saving(function (self $transaction): void {
+            if ($transaction->quantity_bags === null) {
+                return;
+            }
+
+            $bagWeight = (float) (Feed::find($transaction->feed_id)?->bag_weight_kg ?? 0);
+
+            if ($bagWeight > 0) {
+                $transaction->quantity_kg = round((float) $transaction->quantity_bags * $bagWeight, 2);
+            }
+        });
+
+        // Always look the feed up fresh: the relation may still point at the
+        // old feed after a feed_id change, and its aggregate would be stale.
+        static::created(fn (self $transaction) => Feed::find($transaction->feed_id)?->recalculateStock());
+
+        static::updated(function (self $transaction): void {
+            Feed::find($transaction->feed_id)?->recalculateStock();
+
+            // Moving a transaction to another feed must also fix the old feed.
+            $originalFeedId = $transaction->getOriginal('feed_id');
+
+            if ($originalFeedId && (int) $originalFeedId !== (int) $transaction->feed_id) {
+                Feed::find($originalFeedId)?->recalculateStock();
+            }
+        });
+
+        static::deleted(fn (self $transaction) => Feed::find($transaction->feed_id)?->recalculateStock());
     }
 
     public function feed(): BelongsTo
@@ -54,5 +83,12 @@ class FeedTransaction extends Model
         return $this->type === self::TYPE_OUT
             ? -(float) $this->quantity_kg
             : (float) $this->quantity_kg;
+    }
+
+    public function signedQuantityInBags(): float
+    {
+        return $this->type === self::TYPE_OUT
+            ? -abs((float) $this->quantity_bags)
+            : (float) $this->quantity_bags;
     }
 }

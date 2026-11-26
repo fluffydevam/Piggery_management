@@ -20,7 +20,7 @@ class FeedFactory extends Factory
             'category' => fake()->randomElement(Feed::CATEGORIES),
             'bag_weight_kg' => 50,
             'stock_kg' => 0,
-            'reorder_level_kg' => 100,
+            'reorder_level_bags' => 2,
             'unit_cost' => fake()->randomFloat(2, 900, 2500),
             'notes' => null,
         ];

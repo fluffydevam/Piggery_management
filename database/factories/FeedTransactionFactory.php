@@ -18,7 +18,7 @@ class FeedTransactionFactory extends Factory
         return [
             'feed_id' => Feed::factory(),
             'type' => FeedTransaction::TYPE_IN,
-            'quantity_kg' => fake()->randomFloat(2, 10, 500),
+            'quantity_bags' => fake()->randomFloat(2, 1, 10),
             'transaction_date' => fake()->dateTimeBetween('-60 days', 'now')->format('Y-m-d'),
             'reference' => null,
             'cost' => null,

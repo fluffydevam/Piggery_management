@@ -43,10 +43,10 @@ class FeedTransactionForm
                             ->required()
                             ->live()
                             ->native(false)
-                            ->helperText('Adjustments accept negative values (e.g. -10 for spoilage).'),
+                            ->helperText('Adjustments accept negative values (e.g. -0.5 for half a bag of spoilage).'),
 
-                        TextInput::make('quantity_kg')
-                            ->label('Quantity (kg)')
+                        TextInput::make('quantity_bags')
+                            ->label('Quantity (bags)')
                             ->numeric()
                             ->required()
                             ->rules(fn (Get $get, ?FeedTransaction $record): array => [
@@ -63,8 +63,8 @@ class FeedTransactionForm
                                     return null;
                                 }
 
-                                return 'Available: '.number_format((float) $feed->stock_kg, 2).' kg ('
-                                    .number_format($feed->stock_in_bags, 2).' bags)';
+                                return 'Available: '.$feed->stockLabel().' — 1 bag = '
+                                    .number_format((float) $feed->bag_weight_kg, 2).' kg';
                             }),
 
                         DatePicker::make('transaction_date')
