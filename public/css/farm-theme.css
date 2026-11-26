@@ -1,0 +1,183 @@
+/*
+ |--------------------------------------------------------------------------
+ | Joyful Pig Farm theme
+ |--------------------------------------------------------------------------
+ |
+ | Layered on top of Filament's compiled stylesheet so the panel keeps its
+ | light/dark behaviour while picking up the farmhouse palette and a few
+ | tactile hover states. Filament exposes each palette shade as a CSS
+ | variable (--primary-500, --gray-100, ...), so everything below adapts to
+ | both colour schemes automatically.
+ |
+ */
+
+:root {
+    --farm-shadow: 0 18px 32px -24px rgb(90 20 45 / 45%);
+    --farm-shadow-strong: 0 22px 40px -22px rgb(90 20 45 / 55%);
+}
+
+/* ---------------------------------------------------------------- brand */
+
+.fi-logo {
+    transition: transform 200ms ease;
+}
+
+.fi-logo img {
+    border-radius: 9999px;
+    transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fi-logo:hover img {
+    transform: rotate(-7deg) scale(1.08);
+}
+
+/* -------------------------------------------------------------- buttons */
+
+.fi-btn {
+    transition:
+        transform 160ms ease,
+        box-shadow 160ms ease,
+        filter 160ms ease;
+}
+
+.fi-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px -12px color-mix(in oklab, var(--primary-600) 65%, transparent);
+}
+
+.fi-btn:active {
+    transform: translateY(0) scale(0.985);
+    box-shadow: none;
+}
+
+/* -------------------------------------------------------------- sidebar */
+
+.fi-sidebar-item-btn {
+    transition:
+        transform 160ms ease,
+        background-color 160ms ease,
+        color 160ms ease;
+}
+
+.fi-sidebar-item-btn:hover {
+    transform: translateX(3px);
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    box-shadow: inset 3px 0 0 var(--primary-500);
+}
+
+/* ------------------------------------------------------- cards & widgets */
+
+.fi-wi-stats-overview-stat {
+    transition:
+        transform 180ms ease,
+        box-shadow 180ms ease,
+        border-color 180ms ease;
+}
+
+.fi-wi-stats-overview-stat:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary-300);
+    box-shadow: var(--farm-shadow);
+}
+
+.dark .fi-wi-stats-overview-stat:hover {
+    border-color: var(--primary-500);
+    box-shadow: 0 24px 44px -28px rgb(0 0 0 / 90%);
+}
+
+/* ----------------------------------------------------------- table rows */
+
+.fi-ta-row {
+    transition: background-color 140ms ease;
+}
+
+.fi-ta-row:hover {
+    background-color: color-mix(in oklab, var(--primary-500) 7%, transparent);
+}
+
+.dark .fi-ta-row:hover {
+    background-color: color-mix(in oklab, var(--primary-400) 13%, transparent);
+}
+
+/* --------------------------------------------------------------- inputs */
+
+.fi-input-wrp {
+    transition:
+        box-shadow 160ms ease,
+        border-color 160ms ease;
+}
+
+.fi-input-wrp:focus-within {
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary-500) 22%, transparent);
+}
+
+/* ---------------------------------------------------------------- links */
+
+.fi-link {
+    transition: color 140ms ease;
+}
+
+.fi-link:hover {
+    color: var(--primary-600);
+}
+
+.dark .fi-link:hover {
+    color: var(--primary-300);
+}
+
+/* -------------------------------------------------------- page backdrop */
+
+.fi-body {
+    background-image: radial-gradient(
+        1100px 520px at 100% -12%,
+        color-mix(in oklab, var(--primary-200) 50%, transparent),
+        transparent 65%
+    );
+    background-attachment: fixed;
+}
+
+.dark .fi-body {
+    background-image: radial-gradient(
+        1100px 520px at 100% -12%,
+        color-mix(in oklab, var(--primary-500) 16%, transparent),
+        transparent 65%
+    );
+}
+
+/* Simple auth pages (login, register) share the same warm glow. */
+.fi-simple-layout {
+    background-image: radial-gradient(
+        900px 480px at 50% -10%,
+        color-mix(in oklab, var(--primary-200) 55%, transparent),
+        transparent 70%
+    );
+}
+
+.dark .fi-simple-layout {
+    background-image: radial-gradient(
+        900px 480px at 50% -10%,
+        color-mix(in oklab, var(--primary-500) 18%, transparent),
+        transparent 70%
+    );
+}
+
+/* ------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+    .fi-logo img,
+    .fi-btn,
+    .fi-sidebar-item-btn,
+    .fi-wi-stats-overview-stat,
+    .fi-ta-row {
+        transition: none;
+    }
+
+    .fi-logo:hover img,
+    .fi-btn:hover,
+    .fi-sidebar-item-btn:hover,
+    .fi-wi-stats-overview-stat:hover {
+        transform: none;
+    }
+}

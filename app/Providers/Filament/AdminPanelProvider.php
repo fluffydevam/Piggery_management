@@ -15,12 +15,14 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -35,9 +37,24 @@ class AdminPanelProvider extends PanelProvider
             ->registration()
             ->profile()
             ->brandName('Piggery Management')
+            ->brandLogo(asset('images/joyful-pig-badge.png'))
+            ->darkModeBrandLogo(asset('images/joyful-pig-badge.png'))
+            ->brandLogoHeight('2.75rem')
+            ->favicon(asset('images/favicon.png'))
             ->colors([
-                'primary' => Color::Emerald,
+                'primary' => Color::hex('#d6336c'),
+                'gray' => Color::Stone,
+                'success' => Color::hex('#4f9e2f'),
+                'info' => Color::hex('#3e9bd6'),
+                'warning' => Color::hex('#d98324'),
+                'danger' => Color::hex('#d92c2c'),
             ])
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): HtmlString => new HtmlString(
+                    '<link rel="stylesheet" href="' . e(asset('css/farm-theme.css')) . '">'
+                ),
+            )
             ->navigationGroups([
                 NavigationGroup::make('Herd'),
                 NavigationGroup::make('Breeding'),
